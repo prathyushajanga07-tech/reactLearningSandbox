@@ -1,0 +1,16 @@
+.student-card {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 16px;
+  margin: 12px 0;
+  width: 300px;
+  background: #f9f9f9;
+}
+
+.student-card h2 {
+  margin-bottom: 8px;
+}
+
+.student-card p {
+  margin: 4px 0;
+}

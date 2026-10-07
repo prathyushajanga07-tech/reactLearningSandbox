@@ -1,22 +1,26 @@
-import { useState } from "react";
+import StudentCard from "./StudentCard";
 
 function App() {
-  const name = "Prathyusha";
-  const [started, setStarted] = useState(false);
+  const students = [
+    { name: "Prathyusha", course: "CSE", cgpa: "9.7" },
+    { name: "Harshini", course: "MBBS", cgpa: "10" },
+    { name: "Tvisha", course: "CA", cgpa: "9.5" },
+    { name: "Arshi", course: "BBA", cgpa: "9.1" },
+    { name: "Teja", course: "CSE", cgpa: "9.3" }
+  ];
 
   return (
     <div>
-      <h1>Hello, {name}! 🚀</h1>
+      <h1>My Students</h1>
 
-      <p>Welcome to My Placement Journey 🚀</p>
-
-      <p>I'm preparing for software placements.</p>
-
-      <button onClick={() => setStarted((prev) => !prev)}>
-      {started ? "Learning Started" : "Start Learning"}
-      </button>
-
-      {started && <p>Let's get this placement prep started! 🔥</p>}
+      {students.map((student) => (
+        <StudentCard
+          key={student.name}
+          name={student.name}
+          course={student.course}
+          cgpa={student.cgpa}
+        />
+      ))}
     </div>
   );
 }
