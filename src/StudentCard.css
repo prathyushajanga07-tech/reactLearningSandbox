@@ -14,3 +14,13 @@
 .student-card p {
   margin: 4px 0;
 }
+
+.delete-button {
+  background: #dc2626;
+  margin-top: 10px;
+}
+
+.delete-button:hover {
+  background: #b91c1c;
+}
+

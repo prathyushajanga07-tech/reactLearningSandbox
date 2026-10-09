@@ -14,27 +14,36 @@ function App() {
   const [course, setCourse] = useState("");
   const [cgpa, setCgpa] = useState("");
 
-  function handleSubmit(event) {
-    event.preventDefault();
+  
+function handleSubmit(event) {
+  event.preventDefault();
 
-    if (!name.trim() || !course.trim() || !cgpa.trim()) {
-      alert("Please fill in all fields!");
-      return;
-    }
-
-    const newStudent = {
-      id: Date.now(),
-      name: name.trim(),
-      course: course.trim(),
-      cgpa: cgpa.trim()
-    };
-
-    setStudents([...students, newStudent]);
-
-    setName("");
-    setCourse("");
-    setCgpa("");
+  if (!name.trim() || !course.trim() || !cgpa.trim()) {
+    alert("Please fill in all fields!");
+    return;
   }
+
+  const cgpaValue = Number(cgpa);
+
+  if (cgpaValue < 0 || cgpaValue > 10) {
+    alert("CGPA must be between 0 and 10!");
+    return;
+  }
+
+  const newStudent = {
+    id: Date.now(),
+    name: name.trim(),
+    course: course.trim(),
+    cgpa: cgpaValue.toString()
+  };
+
+  setStudents([...students, newStudent]);
+
+  setName("");
+  setCourse("");
+  setCgpa("");
+}
+
 
   return (
     <div className="app">
@@ -72,14 +81,21 @@ function App() {
 
       <h2>Our Students ({students.length})</h2>
 
-      {students.map((student) => (
-        <StudentCard
-          key={student.id}
-          name={student.name}
-          course={student.course}
-          cgpa={student.cgpa}
-        />
-      ))}
+      
+{students.map((student) => (
+  <StudentCard
+    key={student.id}
+    name={student.name}
+    course={student.course}
+    cgpa={student.cgpa}
+    onDelete={() => {
+      setStudents(
+        students.filter((s) => s.id !== student.id)
+      );
+    }}
+  />
+))}
+
     </div>
   );
 }
