@@ -2,7 +2,7 @@
 import { useState } from "react";
 import "./StudentCard.css";
 
-function StudentCard({ name, course, cgpa, onDelete }) {
+function StudentCard({ name, course, cgpa, onDelete, onEdit }) {
   const [showDetails, setShowDetails] = useState(false);
 
   function handleClick() {
@@ -19,7 +19,15 @@ function StudentCard({ name, course, cgpa, onDelete }) {
       </button>
 
       {showDetails && <p>CGPA: {cgpa}</p>}
-
+      
+      <button
+        onClick={() => {
+          console.log("EDIT BUTTON CLICKED");
+          onEdit();
+        }}
+      >
+        Edit Student
+      </button>
       <button
         className="delete-button"
         onClick={onDelete}
