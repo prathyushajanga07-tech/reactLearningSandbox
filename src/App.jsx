@@ -4,6 +4,7 @@ import StudentCard from "./StudentCard";
 
 function App() {
   const [editingId, setEditingId] = useState(null);
+  const [search, setSearch] = useState("");
 
   const [students, setStudents] = useState([
     { id: 1, name: "Prathyusha", course: "CSE", cgpa: "9.7" },
@@ -50,16 +51,13 @@ function App() {
     };
 
     if (editingId !== null) {
-      setStudents((prevStudents) =>
-        prevStudents.map((student) =>
+      setStudents((prev) =>
+        prev.map((student) =>
           student.id === editingId ? studentData : student
         )
       );
     } else {
-      setStudents((prevStudents) => [
-        ...prevStudents,
-        studentData,
-      ]);
+      setStudents((prev) => [...prev, studentData]);
     }
 
     setName("");
@@ -76,14 +74,23 @@ function App() {
   }
 
   function handleDelete(studentId) {
-    setStudents((prevStudents) =>
-      prevStudents.filter((student) => student.id !== studentId)
+    setStudents((prev) =>
+      prev.filter((student) => student.id !== studentId)
     );
 
     if (editingId === studentId) {
       handleCancelEdit();
     }
   }
+
+  const filteredStudents = students.filter((student) => {
+    const query = search.toLowerCase().trim();
+
+    return (
+      student.name.toLowerCase().includes(query) ||
+      student.course.toLowerCase().includes(query)
+    );
+  });
 
   return (
     <div className="app">
@@ -129,18 +136,33 @@ function App() {
         )}
       </form>
 
-      <h2>Our Students ({students.length})</h2>
+      <h2>Search Students 🔎</h2>
 
-      {students.map((student) => (
-        <StudentCard
-          key={student.id}
-          name={student.name}
-          course={student.course}
-          cgpa={student.cgpa}
-          onEdit={() => handleEdit(student)}
-          onDelete={() => handleDelete(student.id)}
-        />
-      ))}
+      <input
+        type="text"
+        placeholder="Search by name or course..."
+        value={search}
+        onChange={(event) => setSearch(event.target.value)}
+      />
+
+      <h2>
+        Our Students ({filteredStudents.length} of {students.length})
+      </h2>
+
+      {filteredStudents.length > 0 ? (
+        filteredStudents.map((student) => (
+          <StudentCard
+            key={student.id}
+            name={student.name}
+            course={student.course}
+            cgpa={student.cgpa}
+            onEdit={() => handleEdit(student)}
+            onDelete={() => handleDelete(student.id)}
+          />
+        ))
+      ) : (
+        <p>No students found. Try another search!</p>
+      )}
     </div>
   );
 }
