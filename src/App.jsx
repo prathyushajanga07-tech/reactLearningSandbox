@@ -1,21 +1,35 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import StudentCard from "./StudentCard";
+
+const initialStudents = [
+  { id: 1, name: "Prathyusha", course: "CSE", cgpa: "9.7" },
+  { id: 2, name: "Harshini", course: "MBBS", cgpa: "10" },
+  { id: 3, name: "Tvisha", course: "CA", cgpa: "9.5" },
+  { id: 4, name: "Arshi", course: "BBA", cgpa: "9.1" },
+];
+
+function loadStudents() {
+  try {
+    const saved = localStorage.getItem("students");
+    return saved ? JSON.parse(saved) : initialStudents;
+  } catch {
+    return initialStudents;
+  }
+}
 
 function App() {
   const [editingId, setEditingId] = useState(null);
   const [search, setSearch] = useState("");
-
-  const [students, setStudents] = useState([
-    { id: 1, name: "Prathyusha", course: "CSE", cgpa: "9.7" },
-    { id: 2, name: "Harshini", course: "MBBS", cgpa: "10" },
-    { id: 3, name: "Tvisha", course: "CA", cgpa: "9.5" },
-    { id: 4, name: "Arshi", course: "BBA", cgpa: "9.1" },
-  ]);
+  const [students, setStudents] = useState(loadStudents);
 
   const [name, setName] = useState("");
   const [course, setCourse] = useState("");
   const [cgpa, setCgpa] = useState("");
+
+  useEffect(() => {
+    localStorage.setItem("students", JSON.stringify(students));
+  }, [students]);
 
   function handleEdit(student) {
     setName(student.name);
@@ -83,22 +97,18 @@ function App() {
     }
   }
 
-  const filteredStudents = students.filter((student) => {
-    const query = search.toLowerCase().trim();
+  const query = search.toLowerCase().trim();
 
-    return (
-      student.name.toLowerCase().includes(query) ||
-      student.course.toLowerCase().includes(query)
-    );
-  });
+  const filteredStudents = students.filter((student) =>
+    student.name.toLowerCase().includes(query) ||
+    student.course.toLowerCase().includes(query)
+  );
 
   return (
     <div className="app">
       <h1>Student Dashboard 🎓</h1>
 
-      <h2>
-        {editingId !== null ? "Edit Student" : "Add a New Student"}
-      </h2>
+      <h2>{editingId !== null ? "Edit Student" : "Add a New Student"}</h2>
 
       <form onSubmit={handleSubmit}>
         <input
@@ -168,5 +178,4 @@ function App() {
 }
 
 export default App;
-
 
