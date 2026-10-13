@@ -19,6 +19,8 @@ function loadStudents() {
 }
 
 function App() {
+  const [status, setStatus] = useState("success");
+
   const [editingId, setEditingId] = useState(null);
   const [search, setSearch] = useState("");
   const [students, setStudents] = useState(loadStudents);
@@ -99,16 +101,19 @@ function App() {
 
   const query = search.toLowerCase().trim();
 
-  const filteredStudents = students.filter((student) =>
-    student.name.toLowerCase().includes(query) ||
-    student.course.toLowerCase().includes(query)
+  const filteredStudents = students.filter(
+    (student) =>
+      student.name.toLowerCase().includes(query) ||
+      student.course.toLowerCase().includes(query)
   );
 
   return (
     <div className="app">
       <h1>Student Dashboard 🎓</h1>
 
-      <h2>{editingId !== null ? "Edit Student" : "Add a New Student"}</h2>
+      <h2>
+        {editingId !== null ? "Edit Student" : "Add a New Student"}
+      </h2>
 
       <form onSubmit={handleSubmit}>
         <input
@@ -159,7 +164,44 @@ function App() {
         Our Students ({filteredStudents.length} of {students.length})
       </h2>
 
-      {filteredStudents.length > 0 ? (
+      {/* Temporary buttons for testing UI states */}
+      <div>
+        <button
+          type="button"
+          onClick={() => setStatus("loading")}
+        >
+          Test Loading
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setStatus("success")}
+        >
+          Test Success
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setStatus("error")}
+        >
+          Test Error
+        </button>
+      </div>
+
+      {/* Render UI based on the current status */}
+      {status === "loading" ? (
+        <p>⏳ Loading students...</p>
+      ) : status === "error" ? (
+        <div>
+          <p>⚠️ Couldn't load students. Please try again.</p>
+          <button
+            type="button"
+            onClick={() => setStatus("success")}
+          >
+            Try again
+          </button>
+        </div>
+      ) : filteredStudents.length > 0 ? (
         filteredStudents.map((student) => (
           <StudentCard
             key={student.id}
@@ -178,4 +220,5 @@ function App() {
 }
 
 export default App;
+
 
