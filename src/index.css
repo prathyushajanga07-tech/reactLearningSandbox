@@ -33,3 +33,15 @@
 .app button:hover {
   background: #1d4ed8;
 }
+
+.empty-state {
+  margin: 20px 0;
+  padding: 24px;
+  text-align: center;
+  border: 1px dashed #b8c0cc;
+  border-radius: 12px;
+}
+
+.empty-state p {
+  margin: 8px 0;
+}

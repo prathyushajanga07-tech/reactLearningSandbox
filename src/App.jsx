@@ -20,7 +20,6 @@ function loadStudents() {
 
 function App() {
   const [status, setStatus] = useState("success");
-
   const [editingId, setEditingId] = useState(null);
   const [search, setSearch] = useState("");
   const [students, setStudents] = useState(loadStudents);
@@ -164,36 +163,14 @@ function App() {
         Our Students ({filteredStudents.length} of {students.length})
       </h2>
 
-      {/* Temporary buttons for testing UI states */}
-      <div>
-        <button
-          type="button"
-          onClick={() => setStatus("loading")}
-        >
-          Test Loading
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setStatus("success")}
-        >
-          Test Success
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setStatus("error")}
-        >
-          Test Error
-        </button>
-      </div>
-
-      {/* Render UI based on the current status */}
       {status === "loading" ? (
-        <p>⏳ Loading students...</p>
+        <div className="empty-state">
+          <p>⏳ Loading students...</p>
+        </div>
       ) : status === "error" ? (
-        <div>
-          <p>⚠️ Couldn't load students. Please try again.</p>
+        <div className="empty-state">
+          <p>⚠️ Couldn't load students.</p>
+          <p>Please try again.</p>
           <button
             type="button"
             onClick={() => setStatus("success")}
@@ -201,7 +178,23 @@ function App() {
             Try again
           </button>
         </div>
-      ) : filteredStudents.length > 0 ? (
+      ) : students.length === 0 ? (
+        <div className="empty-state">
+          <p>🎓 No students yet!</p>
+          <p>Add your first student using the form above.</p>
+        </div>
+      ) : filteredStudents.length === 0 ? (
+        <div className="empty-state">
+          <p>🔎 No matching students found.</p>
+          <p>Try another name or course.</p>
+          <button
+            type="button"
+            onClick={() => setSearch("")}
+          >
+            Clear search
+          </button>
+        </div>
+      ) : (
         filteredStudents.map((student) => (
           <StudentCard
             key={student.id}
@@ -212,13 +205,12 @@ function App() {
             onDelete={() => handleDelete(student.id)}
           />
         ))
-      ) : (
-        <p>No students found. Try another search!</p>
       )}
     </div>
   );
 }
 
 export default App;
+
 
 
