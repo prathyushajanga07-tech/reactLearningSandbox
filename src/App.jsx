@@ -2,44 +2,56 @@
 import { useEffect, useState } from "react";
 import StudentCard from "./StudentCard";
 
-const initialStudents = [
-  { id: 1, name: "Prathyusha", course: "CSE", cgpa: "9.7" },
-  { id: 2, name: "Harshini", course: "MBBS", cgpa: "10" },
-  { id: 3, name: "Tvisha", course: "CA", cgpa: "9.5" },
-  { id: 4, name: "Arshi", course: "BBA", cgpa: "9.1" },
-];
-
-function loadStudents() {
-  try {
-    const saved = localStorage.getItem("students");
-    return saved ? JSON.parse(saved) : initialStudents;
-  } catch {
-    return initialStudents;
-  }
-}
+const API_URL = "http://localhost:5000/students";
 
 function App() {
-  const [status, setStatus] = useState("success");
+  const [students, setStudents] = useState([]);
+  const [status, setStatus] = useState("loading");
   const [editingId, setEditingId] = useState(null);
   const [search, setSearch] = useState("");
-  const [students, setStudents] = useState(loadStudents);
 
   const [name, setName] = useState("");
   const [course, setCourse] = useState("");
   const [cgpa, setCgpa] = useState("");
 
+  async function fetchStudents() {
+    try {
+      setStatus("loading");
+
+      const response = await fetch(API_URL);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch students");
+      }
+
+      const data = await response.json();
+      setStudents(data);
+      setStatus("success");
+    } catch (error) {
+      console.error("Error fetching students:", error);
+      setStatus("error");
+    }
+  }
+
   useEffect(() => {
-    localStorage.setItem("students", JSON.stringify(students));
-  }, [students]);
+    fetchStudents();
+  }, []);
+
+  function resetForm() {
+    setName("");
+    setCourse("");
+    setCgpa("");
+    setEditingId(null);
+  }
 
   function handleEdit(student) {
     setName(student.name);
     setCourse(student.course);
-    setCgpa(student.cgpa);
+    setCgpa(String(student.cgpa));
     setEditingId(student.id);
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
 
     if (!name.trim() || !course.trim() || !cgpa.trim()) {
@@ -59,42 +71,67 @@ function App() {
     }
 
     const studentData = {
-      id: editingId !== null ? editingId : Date.now(),
       name: name.trim(),
       course: course.trim(),
-      cgpa: cgpaValue.toString(),
+      cgpa: cgpaValue,
     };
 
-    if (editingId !== null) {
-      setStudents((prev) =>
-        prev.map((student) =>
-          student.id === editingId ? studentData : student
-        )
-      );
-    } else {
-      setStudents((prev) => [...prev, studentData]);
+    try {
+      const isEditing = editingId !== null;
+      const url = isEditing
+        ? `${API_URL}/${editingId}`
+        : API_URL;
+
+      const response = await fetch(url, {
+        method: isEditing ? "PUT" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(studentData),
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          isEditing
+            ? "Failed to update student"
+            : "Failed to add student"
+        );
+      }
+
+      await fetchStudents();
+      resetForm();
+    } catch (error) {
+      console.error("Error saving student:", error);
+      alert("Couldn't save the student. Please try again.");
     }
-
-    setName("");
-    setCourse("");
-    setCgpa("");
-    setEditingId(null);
   }
 
-  function handleCancelEdit() {
-    setName("");
-    setCourse("");
-    setCgpa("");
-    setEditingId(null);
-  }
-
-  function handleDelete(studentId) {
-    setStudents((prev) =>
-      prev.filter((student) => student.id !== studentId)
+  async function handleDelete(studentId) {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this student?"
     );
 
-    if (editingId === studentId) {
-      handleCancelEdit();
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/${studentId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete student");
+      }
+
+      if (editingId === studentId) {
+        resetForm();
+      }
+
+      await fetchStudents();
+    } catch (error) {
+      console.error("Error deleting student:", error);
+      alert("Couldn't delete the student. Please try again.");
     }
   }
 
@@ -110,9 +147,7 @@ function App() {
     <div className="app">
       <h1>Student Dashboard 🎓</h1>
 
-      <h2>
-        {editingId !== null ? "Edit Student" : "Add a New Student"}
-      </h2>
+      <h2>{editingId !== null ? "Edit Student" : "Add a New Student"}</h2>
 
       <form onSubmit={handleSubmit}>
         <input
@@ -144,7 +179,7 @@ function App() {
         </button>
 
         {editingId !== null && (
-          <button type="button" onClick={handleCancelEdit}>
+          <button type="button" onClick={resetForm}>
             Cancel Edit
           </button>
         )}
@@ -170,12 +205,9 @@ function App() {
       ) : status === "error" ? (
         <div className="empty-state">
           <p>⚠️ Couldn't load students.</p>
-          <p>Please try again.</p>
-          <button
-            type="button"
-            onClick={() => setStatus("success")}
-          >
-            Try again
+          <p>Check that your backend is running.</p>
+          <button type="button" onClick={fetchStudents}>
+            Try Again
           </button>
         </div>
       ) : students.length === 0 ? (
@@ -187,11 +219,8 @@ function App() {
         <div className="empty-state">
           <p>🔎 No matching students found.</p>
           <p>Try another name or course.</p>
-          <button
-            type="button"
-            onClick={() => setSearch("")}
-          >
-            Clear search
+          <button type="button" onClick={() => setSearch("")}>
+            Clear Search
           </button>
         </div>
       ) : (
@@ -211,6 +240,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
