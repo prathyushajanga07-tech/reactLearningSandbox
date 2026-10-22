@@ -19,11 +19,26 @@ app.get("/students", (req, res) => {
 
 
 app.post("/students", (req, res) => {
+    const { name, course, cgpa } = req.body;
+    if (
+        typeof name !== "string" ||
+        name.trim() === "" ||
+        typeof course !== "string" ||
+        course.trim() === "" ||
+        typeof cgpa !== "number" ||
+        !Number.isFinite(cgpa) ||
+        cgpa < 0 ||
+        cgpa > 10
+    ) {
+        return res.status(400).json({
+            message: "Invalid student data"
+        });
+    }
     const newStudent = {
         id: Date.now(),
-        name: req.body.name,
-        course: req.body.course,
-        cgpa: req.body.cgpa
+        name: name.trim(),
+        course: course.trim(),
+        cgpa
     };
 
     students.push(newStudent);
@@ -42,11 +57,34 @@ app.put("/students/:id", (req, res) => {
         });
     }
 
-    student.name = req.body.name ?? student.name;
-    student.course = req.body.course ?? student.course;
-    student.cgpa = req.body.cgpa ?? student.cgpa;
+    // Prepare the proposed values.
+    // Missing fields keep their existing values.
+    const updatedName = req.body.name ?? student.name;
+    const updatedCourse = req.body.course ?? student.course;
+    const updatedCgpa = req.body.cgpa ?? student.cgpa;
 
-    res.json(student);
+    // Validate before modifying the student.
+    if (
+        typeof updatedName !== "string" ||
+        updatedName.trim() === "" ||
+        typeof updatedCourse !== "string" ||
+        updatedCourse.trim() === "" ||
+        typeof updatedCgpa !== "number" ||
+        !Number.isFinite(updatedCgpa) ||
+        updatedCgpa < 0 ||
+        updatedCgpa > 10
+    ) {
+        return res.status(400).json({
+            message: "Invalid student data"
+        });
+    }
+
+    // Update only after validation passes.
+    student.name = updatedName.trim();
+    student.course = updatedCourse.trim();
+    student.cgpa = updatedCgpa;
+
+    return res.json(student);
 });
 
 app.delete("/students/:id", (req, res) => {
