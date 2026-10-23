@@ -13,6 +13,7 @@ function App() {
   const [name, setName] = useState("");
   const [course, setCourse] = useState("");
   const [cgpa, setCgpa] = useState("");
+  const [formError, setFormError] = useState("");
 
   async function fetchStudents() {
     try {
@@ -42,6 +43,7 @@ function App() {
     setCourse("");
     setCgpa("");
     setEditingId(null);
+    setFormError("");
   }
 
   function handleEdit(student) {
@@ -49,13 +51,15 @@ function App() {
     setCourse(student.course);
     setCgpa(String(student.cgpa));
     setEditingId(student.id);
+    setFormError("");
   }
 
   async function handleSubmit(event) {
     event.preventDefault();
+    setFormError("");
 
     if (!name.trim() || !course.trim() || !cgpa.trim()) {
-      alert("Please fill in all fields!");
+      setFormError("Please fill in all fields.");
       return;
     }
 
@@ -66,7 +70,7 @@ function App() {
       cgpaValue < 0 ||
       cgpaValue > 10
     ) {
-      alert("CGPA must be between 0 and 10!");
+      setFormError("CGPA must be between 0 and 10.");
       return;
     }
 
@@ -90,11 +94,14 @@ function App() {
         body: JSON.stringify(studentData),
       });
 
+      const data = await response.json().catch(() => ({}));
+
       if (!response.ok) {
         throw new Error(
-          isEditing
-            ? "Failed to update student"
-            : "Failed to add student"
+          data.message ||
+            (isEditing
+              ? "Failed to update student."
+              : "Failed to add student.")
         );
       }
 
@@ -102,7 +109,10 @@ function App() {
       resetForm();
     } catch (error) {
       console.error("Error saving student:", error);
-      alert("Couldn't save the student. Please try again.");
+      setFormError(
+        error.message ||
+          "Couldn't save the student. Please try again."
+      );
     }
   }
 
@@ -121,7 +131,11 @@ function App() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to delete student");
+        const data = await response.json().catch(() => ({}));
+
+        throw new Error(
+          data.message || "Failed to delete student."
+        );
       }
 
       if (editingId === studentId) {
@@ -131,7 +145,10 @@ function App() {
       await fetchStudents();
     } catch (error) {
       console.error("Error deleting student:", error);
-      alert("Couldn't delete the student. Please try again.");
+      alert(
+        error.message ||
+          "Couldn't delete the student. Please try again."
+      );
     }
   }
 
@@ -147,7 +164,9 @@ function App() {
     <div className="app">
       <h1>Student Dashboard 🎓</h1>
 
-      <h2>{editingId !== null ? "Edit Student" : "Add a New Student"}</h2>
+      <h2>
+        {editingId !== null ? "Edit Student" : "Add a New Student"}
+      </h2>
 
       <form onSubmit={handleSubmit}>
         <input
@@ -184,6 +203,12 @@ function App() {
           </button>
         )}
       </form>
+
+      {formError && (
+        <p role="alert" className="form-error">
+          ⚠️ {formError}
+        </p>
+      )}
 
       <h2>Search Students 🔎</h2>
 
@@ -240,6 +265,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
