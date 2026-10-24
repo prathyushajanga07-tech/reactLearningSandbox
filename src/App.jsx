@@ -1,12 +1,13 @@
-
 import { useEffect, useState } from "react";
 import StudentCard from "./StudentCard";
 
 const API_URL = "http://localhost:5000/students";
+const REQUEST_TIMEOUT = 5000;
 
 function App() {
   const [students, setStudents] = useState([]);
   const [status, setStatus] = useState("loading");
+  const [loadError, setLoadError] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [search, setSearch] = useState("");
 
@@ -16,21 +17,42 @@ function App() {
   const [formError, setFormError] = useState("");
 
   async function fetchStudents() {
+    const controller = new AbortController();
+
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, REQUEST_TIMEOUT);
+
     try {
       setStatus("loading");
+      setLoadError("");
 
-      const response = await fetch(API_URL);
+      const response = await fetch(API_URL, {
+        signal: controller.signal,
+      });
 
       if (!response.ok) {
-        throw new Error("Failed to fetch students");
+        throw new Error("Failed to fetch students. Please try again.");
       }
 
       const data = await response.json();
+
       setStudents(data);
       setStatus("success");
     } catch (error) {
       console.error("Error fetching students:", error);
+
+      if (error.name === "AbortError") {
+        setLoadError("The request took too long. Please try again.");
+      } else {
+        setLoadError(
+          "Couldn't load students. Check that your backend is running."
+        );
+      }
+
       setStatus("error");
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 
@@ -229,8 +251,7 @@ function App() {
         </div>
       ) : status === "error" ? (
         <div className="empty-state">
-          <p>⚠️ Couldn't load students.</p>
-          <p>Check that your backend is running.</p>
+          <p role="alert">⚠️ {loadError || "Couldn't load students."}</p>
           <button type="button" onClick={fetchStudents}>
             Try Again
           </button>
@@ -263,7 +284,6 @@ function App() {
     </div>
   );
 }
-
 export default App;
 
 
